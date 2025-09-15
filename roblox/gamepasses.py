@@ -3,12 +3,14 @@
 Contains classes related to Roblox gamepass data and parsing.
 
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .client import Client
+
 from typing import Optional
 
 from .bases.basegamepass import BaseGamePass
@@ -33,3 +35,9 @@ class GamePass(BaseGamePass):
         self.display_name: str = data["displayName"]
         # TODO: add product here
         self.price: Optional[int] = data["price"]
+
+        # TODO: use user and product base objects
+        self.product_id: int = data["productId"]
+        self.seller_name: str = data["sellerName"]
+        self.seller_id: int = data["sellerId"]
+        self.is_owned: bool = data["isOwned"]
