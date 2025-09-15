@@ -4,7 +4,7 @@ Contains the Client, which is the core object at the center of all ro.py applica
 
 """
 
-from typing import Union, List, Optional
+from typing import List, Optional, Union
 
 from .account import AccountProvider
 from .assets import EconomyAsset
@@ -20,15 +20,28 @@ from .bases.baseuser import BaseUser
 from .chat import ChatProvider
 from .delivery import DeliveryProvider
 from .groups import Group
-from .partials.partialuser import PartialUser, RequestedUsernamePartialUser, PreviousUsernamesPartialUser
+from .partials.partialuser import (
+    PartialUser,
+    PreviousUsernamesPartialUser,
+    RequestedUsernamePartialUser,
+)
 from .places import Place
 from .plugins import Plugin
 from .presence import PresenceProvider
 from .thumbnails import ThumbnailProvider
 from .universes import Universe
 from .users import User
-from .utilities.exceptions import BadRequest, NotFound, AssetNotFound, BadgeNotFound, GroupNotFound, PlaceNotFound, \
-    PluginNotFound, UniverseNotFound, UserNotFound
+from .utilities.exceptions import (
+    AssetNotFound,
+    BadgeNotFound,
+    BadRequest,
+    GroupNotFound,
+    NotFound,
+    PlaceNotFound,
+    PluginNotFound,
+    UniverseNotFound,
+    UserNotFound,
+)
 from .utilities.iterators import PageIterator
 from .utilities.requests import Requests
 from .utilities.url import URLGenerator
@@ -101,14 +114,13 @@ class Client:
             )
         except NotFound as exception:
             raise UserNotFound(
-                message="Invalid user.",
-                response=exception.response
+                message="Invalid user.", response=exception.response
             ) from None
         user_data = user_response.json()
         return User(client=self, data=user_data)
 
     async def get_authenticated_user(
-            self, expand: bool = True
+        self, expand: bool = True
     ) -> Union[User, PartialUser]:
         """
         Grabs the authenticated user.
@@ -120,7 +132,7 @@ class Client:
             The authenticated user.
         """
         authenticated_user_response = await self._requests.get(
-            url=self._url_generator.get_url("users", f"v1/users/authenticated")
+            url=self._url_generator.get_url("users", "v1/users/authenticated")
         )
         authenticated_user_data = authenticated_user_response.json()
 
@@ -130,10 +142,10 @@ class Client:
             return PartialUser(client=self, data=authenticated_user_data)
 
     async def get_users(
-            self,
-            user_ids: List[int],
-            exclude_banned_users: bool = False,
-            expand: bool = False,
+        self,
+        user_ids: List[int],
+        exclude_banned_users: bool = False,
+        expand: bool = False,
     ) -> Union[List[PartialUser], List[User]]:
         """
         Grabs a list of users corresponding to each user ID in the list.
@@ -147,7 +159,7 @@ class Client:
             A List of Users or partial users.
         """
         users_response = await self._requests.post(
-            url=self._url_generator.get_url("users", f"v1/users"),
+            url=self._url_generator.get_url("users", "v1/users"),
             json={"userIds": user_ids, "excludeBannedUsers": exclude_banned_users},
         )
         users_data = users_response.json()["data"]
@@ -156,15 +168,14 @@ class Client:
             return [await self.get_user(user_data["id"]) for user_data in users_data]
         else:
             return [
-                PartialUser(client=self, data=user_data)
-                for user_data in users_data
+                PartialUser(client=self, data=user_data) for user_data in users_data
             ]
 
     async def get_users_by_usernames(
-            self,
-            usernames: List[str],
-            exclude_banned_users: bool = False,
-            expand: bool = False,
+        self,
+        usernames: List[str],
+        exclude_banned_users: bool = False,
+        expand: bool = False,
     ) -> Union[List[RequestedUsernamePartialUser], List[User]]:
         """
         Grabs a list of users corresponding to each username in the list.
@@ -178,7 +189,7 @@ class Client:
             A list of User or RequestedUsernamePartialUser, depending on the expand argument.
         """
         users_response = await self._requests.post(
-            url=self._url_generator.get_url("users", f"v1/usernames/users"),
+            url=self._url_generator.get_url("users", "v1/usernames/users"),
             json={"usernames": usernames, "excludeBannedUsers": exclude_banned_users},
         )
         users_data = users_response.json()["data"]
@@ -192,7 +203,7 @@ class Client:
             ]
 
     async def get_user_by_username(
-            self, username: str, exclude_banned_users: bool = False, expand: bool = True
+        self, username: str, exclude_banned_users: bool = False, expand: bool = True
     ) -> Union[RequestedUsernamePartialUser, User]:
         """
         Grabs a user corresponding to the passed username.
@@ -231,8 +242,9 @@ class Client:
         """
         return BaseUser(client=self, user_id=user_id)
 
-    def user_search(self, keyword: str, page_size: int = 10,
-                    max_items: int = None) -> PageIterator:
+    def user_search(
+        self, keyword: str, page_size: int = 10, max_items: int = None
+    ) -> PageIterator:
         """
         Search for users with a keyword.
 
@@ -246,11 +258,13 @@ class Client:
         """
         return PageIterator(
             client=self,
-            url=self._url_generator.get_url("users", f"v1/users/search"),
+            url=self._url_generator.get_url("users", "v1/users/search"),
             page_size=page_size,
             max_items=max_items,
             extra_parameters={"keyword": keyword},
-            handler=lambda client, data: PreviousUsernamesPartialUser(client=client, data=data),
+            handler=lambda client, data: PreviousUsernamesPartialUser(
+                client=client, data=data
+            ),
         )
 
     # Groups
@@ -270,8 +284,7 @@ class Client:
             )
         except BadRequest as exception:
             raise GroupNotFound(
-                message="Invalid group.",
-                response=exception.response
+                message="Invalid group.", response=exception.response
             ) from None
         group_data = group_response.json()
         return Group(client=self, data=group_data)
@@ -357,15 +370,11 @@ class Client:
             A list of Places.
         """
         places_response = await self._requests.get(
-            url=self._url_generator.get_url(
-                "games", f"v1/games/multiget-place-details"
-            ),
+            url=self._url_generator.get_url("games", "v1/games/multiget-place-details"),
             params={"placeIds": place_ids},
         )
         places_data = places_response.json()
-        return [
-            Place(client=self, data=place_data) for place_data in places_data
-        ]
+        return [Place(client=self, data=place_data) for place_data in places_data]
 
     async def get_place(self, place_id: int) -> Place:
         """
@@ -418,8 +427,7 @@ class Client:
             )
         except BadRequest as exception:
             raise AssetNotFound(
-                message="Invalid asset.",
-                response=exception.response
+                message="Invalid asset.", response=exception.response
             ) from None
         asset_data = asset_response.json()
         return EconomyAsset(client=self, data=asset_data)
@@ -452,12 +460,8 @@ class Client:
             A list of Plugins.
         """
         plugins_response = await self._requests.get(
-            url=self._url_generator.get_url(
-                "develop", "v1/plugins"
-            ),
-            params={
-                "pluginIds": plugin_ids
-            }
+            url=self._url_generator.get_url("develop", "v1/plugins"),
+            params={"pluginIds": plugin_ids},
         )
         plugins_data = plugins_response.json()["data"]
         return [Plugin(client=self, data=plugin_data) for plugin_data in plugins_data]
@@ -507,14 +511,11 @@ class Client:
         """
         try:
             badge_response = await self._requests.get(
-                url=self._url_generator.get_url(
-                    "badges", f"v1/badges/{badge_id}"
-                )
+                url=self._url_generator.get_url("badges", f"v1/badges/{badge_id}")
             )
         except NotFound as exception:
             raise BadgeNotFound(
-                message="Invalid badge.",
-                response=exception.response
+                message="Invalid badge.", response=exception.response
             ) from None
         badge_data = badge_response.json()
         return Badge(client=self, data=badge_data)
@@ -550,3 +551,34 @@ class Client:
         Returns: A BaseGamePass.
         """
         return BaseGamePass(client=self, gamepass_id=gamepass_id)
+
+    async def purchase_gamepass(
+        self,
+        gamepass_id: int,
+        expected_price: int,
+        expected_seller_id: int,
+        expected_currency: int = 1,
+    ) -> dict:
+        """
+        Purchases a gamepass using the authenticated session.
+
+        Arguments:
+            gamepass_id: The gamepass product ID to purchase.
+            expected_price: Expected price in Robux.
+            expected_seller_id: Expected seller ID.
+            expected_currency: Expected currency (1 = Robux).
+
+        Returns:
+            A dictionary containing the purchase response.
+        """
+        purchase_response = await self._requests.post(
+            url=self._url_generator.get_url(
+                "apis", f"game-passes/v1/game-passes/{gamepass_id}/purchase"
+            ),
+            json={
+                "expectedCurrency": expected_currency,
+                "expectedPrice": expected_price,
+                "expectedSellerId": expected_seller_id,
+            },
+        )
+        return purchase_response.json()
