@@ -4,7 +4,7 @@ Contains the Client, which is the core object at the center of all ro.py applica
 
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, overload
 
 from .account import AccountProvider
 from .assets import EconomyAsset
@@ -118,6 +118,12 @@ class Client:
             ) from None
         user_data = user_response.json()
         return User(client=self, data=user_data)
+
+    @overload
+    async def get_authenticated_user(self, expand: bool = True) -> User: ...
+
+    @overload
+    async def get_authenticated_user(self, expand: bool = True) -> PartialUser: ...
 
     async def get_authenticated_user(
         self, expand: bool = True
